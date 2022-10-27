@@ -1,5 +1,6 @@
 // 配置文件是固定写法
 const path = require("path")   //nodejs核心模块 专门用来处理路径问题
+const ESLintPlugin = require('eslint-webpack-plugin')  //引入eslint依赖包
 
 module.exports = { 
     // 入口
@@ -78,7 +79,7 @@ module.exports = {
             },
             // 处理图标资源
             {
-                test: /\.(ttf|woff2?)$/,
+                test: /\.(ttf|woff2?|map3|map4|avi)$/,   //其他资源
                 type: "asset/resource",   //该类型不会转base64
                 generator: {
                     //输出图片名称    hash名称id ext文件扩展名 query可选参数
@@ -92,6 +93,10 @@ module.exports = {
     // 插件
     plugins: [
         //plugins的配置
+        new ESLintPlugin({
+            context: path.resolve(__dirname, "src"),
+            
+        })
     ],
     // 模式
     mode: "development",
