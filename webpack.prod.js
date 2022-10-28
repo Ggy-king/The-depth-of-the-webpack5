@@ -3,19 +3,19 @@ const path = require("path")   //nodejs核心模块 专门用来处理路径问�
 const ESLintPlugin = require('eslint-webpack-plugin')  //引入eslint依赖包
 const HtmlWebpackPlugin = require('html-webpack-plugin')  //引入处理html资源包
 
-module.exports = { 
+module.exports = {
     // 入口
     entry: "./src/main.js",  //相对路径
     // 输出
     output: {
         //文件的输出路径
         // __dirname是nodejs的变量 代表当前文件的文件夹目录
-        path: path.resolve(__dirname,"dist"),    //绝对路径
+        path: path.resolve(__dirname, "dist"),    //绝对路径
         // 是入口文件打包输出的文件名
         filename: "static/js/main.js",
         //自动清空打包内容
         //原理 在打包前 将path整个目录内容清空 再进行打包
-        clean:true
+        clean: true
     },
     // 加载器
     module: {
@@ -105,21 +105,16 @@ module.exports = {
         // Eslint
         new ESLintPlugin({
             context: path.resolve(__dirname, "src"),
-            
+
         }),
         // Html
         new HtmlWebpackPlugin({
             // 特点 1 结构和原来一致 2自动引入打包输出的资源
-            template: path.resolve(__dirname,"public/index.html")   //需要配置模板
+            template: path.resolve(__dirname, "public/index.html")   //需要配置模板
         })
     ],
-    //开发服务器
-    devServe: {
-        host: "localhost",  //启动服务器域名
-        port: "3000",  // 启动服务器端口号
-        open: true,   // 是否自动打开浏览器的窗口
-    },
+   //生产模式下不需要devSever
     // 模式
-    mode: "development",
+    mode: "production",
 
 }
