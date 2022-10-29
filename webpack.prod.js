@@ -2,6 +2,28 @@
 const path = require("path")   //nodejs核心模块 专门用来处理路径问题
 const ESLintPlugin = require('eslint-webpack-plugin')  //引入eslint依赖包
 const HtmlWebpackPlugin = require('html-webpack-plugin')  //引入处理html资源包
+const MiniCssExtractPlugin = require("mini-css-extract-plugin")  //引入单独打包css的依赖包
+const CssMinimizerPlugin = require("css-minimizer-webpack-plugin")  //引入css压缩依赖包
+
+// 封装一个用来获取样式的方法
+function getStyleLoader(pres) {
+    return [
+        MiniCssExtractPlugin.loader,    //提取css成单独文件
+        "css-loader",    //将css资源编译成common.js的模块到js中
+        {
+            loader: "postcss-loader",
+            options: {
+                postcssOptions: {
+                    plugins: [
+                        "postcss-preset-env",  //能解决大多数样式兼容性的问题
+                    ]
+                }
+            }
+        },
+        pre,
+    ].filter(Boolean);   //会将Boolean值给过滤掉
+}
+
 
 module.exports = {
     // 入口
@@ -21,46 +43,35 @@ module.exports = {
     module: {
         rules: [
             //loader配置
+            //css配置
             {
                 test: /\.css$/,    //只检测.css文件 
-                use: [           //执行顺序从下到上，从右到左
-                    "style-loader",    //将js中css通过创建style标签添加html文件中生效
-                    "css-loader"    //将css资源编译成common.js的模块到js中
-                ]
+                use: getStyleLoader(),//执行顺序从下到上，从右到左
             },
+
             //less配置
             {
                 test: /\.less$/,    //只检测.less文件
                 loader: "xxx",     //这样写只能写一个loader
-                use: [           //执行顺序从下到上，从右到左
-                    // use可以写多个loader
-                    "style-loader",    //将js中css通过创建style标签添加html文件中生效
-                    "css-loader",    //将css资源编译成common.js的模块到js中
-                    "less-loader"
-                ]
+                use: getStyleLoader("less-loader"),  // use可以写多个loader    
             },
+
             // sass/scss配置
             {
                 test: /\.s[ac]ss$/,    //只检测.scss/.sass文件
                 loader: "xxx",     //这样写只能写一个loader
-                use: [           //执行顺序从下到上，从右到左
-                    // use可以写多个loader
-                    "style-loader",    //将js中css通过创建style标签添加html文件中生效
-                    "css-loader",    //将css资源编译成common.js的模块到js中
-                    "sass-loader"  //将sass文件编译成css
-                ]
+                use: getStyleLoader("sass-loader"),
+                    
             },
+
             // styl配置
             {
                 test: /\.s[ac]ss$/,    //只检测.scss/.sass文件
                 loader: "xxx",     //这样写只能写一个loader
-                use: [           //执行顺序从下到上，从右到左
-                    // use可以写多个loader
-                    "style-loader",    //将js中css通过创建style标签添加html文件中生效
-                    "css-loader",    //将css资源编译成common.js的模块到js中
-                    "stylus-loader"  //将styl文件编译成css
-                ]
+                use: getStyleLoader("stylus-loader"),  //将styl文件编译成css
+                
             },
+
             // 处理图片资源
             {
                 test: /\.(png|jpe?p|gif|webp|svg)$/,
@@ -78,6 +89,7 @@ module.exports = {
                     filename: "static/images/[hash:10][ext][query]",
                 }
             },
+
             // 处理图标资源
             {
                 test: /\.(ttf|woff2?|map3|map4|avi)$/,   //其他资源
@@ -111,7 +123,12 @@ module.exports = {
         new HtmlWebpackPlugin({
             // 特点 1 结构和原来一致 2自动引入打包输出的资源
             template: path.resolve(__dirname, "public/index.html")   //需要配置模板
-        })
+        }),
+        // css打包配置
+        new MiniCssExtractPlugin({
+            filename: 'static/css/main.css',
+        }),  //css成单独文件的插件调用
+        new CssMinimizerPlugin(), 
     ],
    //生产模式下不需要devSever
     // 模式
