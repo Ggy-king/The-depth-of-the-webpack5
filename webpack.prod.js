@@ -133,5 +133,6 @@ module.exports = {
    //生产模式下不需要devSever
     // 模式
     mode: "production",
+    devtool: "source-map"
 
 }
