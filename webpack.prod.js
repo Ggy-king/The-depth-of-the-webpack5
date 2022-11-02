@@ -106,9 +106,11 @@ module.exports = {
                         test: /\.js$/,
                         exclude: /node_modules/,  //排除node_modules中的文件(即不对该文件进行处理 因为这些成熟的依赖包已经处理好了)
                         loader: "babel-loader",
-                        // options: {
-                        //     presets: ["@babel/preset-env"],
-                        // },     //配置文件可以选择在外面写
+                        options: {
+                            // presets: ["@babel/preset-env"],  //配置文件可以选择在外面写
+                            cacheDirectory: true, // 开启babel缓存
+                            cacheCompression: false, //关闭缓存文件压缩
+                        },     
                     }
                 ]
             }
@@ -120,6 +122,9 @@ module.exports = {
         // Eslint
         new ESLintPlugin({
             context: path.resolve(__dirname, "src"),
+            exclude: "node_modules",
+            cache: true, // 开启缓存
+            cacheLocation: path.resolve(__dirname,'../node_module/.cache/eslintcache'),  //指定缓存路径
 
         }),
         // Html

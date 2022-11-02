@@ -90,10 +90,14 @@ module.exports = {
                     {
                         test: /\.js$/,
                         exclude: /node_modules/,  //排除node_modules中的文件(即不对该文件进行处理 因为这些成熟的依赖包已经处理好了)
+                        include: path.resolve(__dirname,'../src'),  //只处理src下的文件
                         loader: "babel-loader",
-                        // options: {
-                        //     presets: ["@babel/preset-env"],
-                        // },     //配置文件可以选择在外面写
+                        options: {
+                            // presets: ["@babel/preset-env"],//配置文件可以选择在外面写
+                            cacheDirectory: true, // 开启babel缓存
+                            cacheCompression: false, //关闭缓存文件压缩
+
+                        },     
                     }
                 ]
             }
@@ -106,8 +110,9 @@ module.exports = {
         //plugins的配置
         // Eslint
         new ESLintPlugin({
+            // 检查那些文件
             context: path.resolve(__dirname, "src"),
-
+            exclude:"node_modules",
         }),
         // Html
         new HtmlWebpackPlugin({
