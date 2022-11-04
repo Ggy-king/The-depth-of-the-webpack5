@@ -1,7 +1,10 @@
 // 配置文件是固定写法
+const os = require("os")  //os模块
 const path = require("path")   //nodejs核心模块 专门用来处理路径问题
 const ESLintPlugin = require('eslint-webpack-plugin')  //引入eslint依赖包
 const HtmlWebpackPlugin = require('html-webpack-plugin')  //引入处理html资源包
+
+const threads = os.cpus().length  //获取cpu核心数
 
 module.exports = {
     // 入口
@@ -89,15 +92,25 @@ module.exports = {
                     },
                     {
                         test: /\.js$/,
-                        exclude: /node_modules/,  //排除node_modules中的文件(即不对该文件进行处理 因为这些成熟的依赖包已经处理好了)
+                        // exclude: /node_modules/,  //排除node_modules中的文件(即不对该文件进行处理 因为这些成熟的依赖包已经处理好了)
                         include: path.resolve(__dirname,'../src'),  //只处理src下的文件
-                        loader: "babel-loader",
-                        options: {
-                            // presets: ["@babel/preset-env"],//配置文件可以选择在外面写
-                            cacheDirectory: true, // 开启babel缓存
-                            cacheCompression: false, //关闭缓存文件压缩
-
-                        },     
+                        use: [
+                            {
+                                loader: "thread-loader",  // 开启多线程
+                                options: {
+                                    works: threads,  //进程数量
+                                }
+                            },
+                            {
+                                loader: "babel-loader",
+                                options: {
+                                    // presets: ["@babel/preset-env"],  //配置文件可以选择在外面写
+                                    cacheDirectory: true, // 开启babel缓存
+                                    cacheCompression: false, //关闭缓存文件压缩
+                                    plugins: ["@babel/plugin-transform-runtime"], //减少代码体积
+                                },
+                            }
+                        ]     
                     }
                 ]
             }
@@ -112,7 +125,10 @@ module.exports = {
         new ESLintPlugin({
             // 检查那些文件
             context: path.resolve(__dirname, "src"),
-            exclude:"node_modules",
+            exclude: "node_modules",
+            cache: true, // 开启缓存
+            cacheLocation: path.resolve(__dirname, '../node_module/.cache/eslintcache'),  //指定缓存路径
+            threads, //开启多线程和设置线程数量
         }),
         // Html
         new HtmlWebpackPlugin({

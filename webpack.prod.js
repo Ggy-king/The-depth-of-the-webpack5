@@ -1,9 +1,14 @@
 // 配置文件是固定写法
+const os = require("os")  //os模块
 const path = require("path")   //nodejs核心模块 专门用来处理路径问题
 const ESLintPlugin = require('eslint-webpack-plugin')  //引入eslint依赖包
 const HtmlWebpackPlugin = require('html-webpack-plugin')  //引入处理html资源包
 const MiniCssExtractPlugin = require("mini-css-extract-plugin")  //引入单独打包css的依赖包
 const CssMinimizerPlugin = require("css-minimizer-webpack-plugin")  //引入css压缩依赖包
+const TerserWebpackPlugin = require("terser-webpack-plugin")  //引入js压缩依赖包
+const ImageMinimizerPlugin = require("image-minimizer-webpack-plugin")  //引入压缩图片依赖包 下面的配置暂不写
+
+const threads = os.cpus().length  //获取cpu核心数
 
 // 封装一个用来获取样式的方法
 function getStyleLoader(pres) {
@@ -105,12 +110,23 @@ module.exports = {
                     {
                         test: /\.js$/,
                         exclude: /node_modules/,  //排除node_modules中的文件(即不对该文件进行处理 因为这些成熟的依赖包已经处理好了)
-                        loader: "babel-loader",
-                        options: {
-                            // presets: ["@babel/preset-env"],  //配置文件可以选择在外面写
-                            cacheDirectory: true, // 开启babel缓存
-                            cacheCompression: false, //关闭缓存文件压缩
-                        },     
+                        use: [
+                            {
+                                loader: "thread-loader",  // 开启多线程
+                                options: {
+                                    works: threads,  //进程数量
+                                }
+                            },
+                            {
+                                loader: "babel-loader",
+                                options: {
+                                    // presets: ["@babel/preset-env"],  //配置文件可以选择在外面写
+                                    cacheDirectory: true, // 开启babel缓存
+                                    cacheCompression: false, //关闭缓存文件压缩
+                                    plugins: ["@babel/plugin-transform-runtime"], //减少代码体积
+                                },  
+                            }
+                        ]   
                     }
                 ]
             }
@@ -124,7 +140,8 @@ module.exports = {
             context: path.resolve(__dirname, "src"),
             exclude: "node_modules",
             cache: true, // 开启缓存
-            cacheLocation: path.resolve(__dirname,'../node_module/.cache/eslintcache'),  //指定缓存路径
+            cacheLocation: path.resolve(__dirname, '../node_module/.cache/eslintcache'),  //指定缓存路径
+            threads, //开启多线程和设置线程数量
 
         }),
         // Html
@@ -136,8 +153,19 @@ module.exports = {
         new MiniCssExtractPlugin({
             filename: 'static/css/main.css',
         }),  //css成单独文件的插件调用
-        new CssMinimizerPlugin(),
+        // new CssMinimizerPlugin(),
+        // new TerserWebpackPlugin({   
+        //     parallel: threads,  //开启多线程和设置线程数量
+        // }),
     ],
+    optimization: {  //压缩的相关可以放在这里 功能是一样的
+        minimizer: [
+            new CssMinimizerPlugin(),
+            new TerserWebpackPlugin({
+                parallel: threads,  //开启多线程和设置线程数量
+            }),
+      ]  
+    },
     //生产模式下不需要devSever
     // 模式
     mode: "production",
