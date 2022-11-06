@@ -34,3 +34,6 @@ plugins: [
 import("./count")
     .then()
     .catch()
+
+
+// 单独引入 起打包名字 

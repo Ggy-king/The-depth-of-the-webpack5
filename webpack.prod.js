@@ -7,6 +7,7 @@ const MiniCssExtractPlugin = require("mini-css-extract-plugin")  //引入单独�
 const CssMinimizerPlugin = require("css-minimizer-webpack-plugin")  //引入css压缩依赖包
 const TerserWebpackPlugin = require("terser-webpack-plugin")  //引入js压缩依赖包
 const ImageMinimizerPlugin = require("image-minimizer-webpack-plugin")  //引入压缩图片依赖包 下面的配置暂不写
+const PreloadWebpackPlugin = require("@vue/preload-webpack-plugin")  //引入立即加载依赖包
 
 const threads = os.cpus().length  //获取cpu核心数
 
@@ -39,7 +40,9 @@ module.exports = {
         // __dirname是nodejs的变量 代表当前文件的文件夹目录
         path: path.resolve(__dirname, "dist"),    //绝对路径
         // 是入口文件打包输出的文件名
-        filename: "static/js/main.js",
+        filename: "static/js/[name].js",
+        chunkFilename: "static/js/[name].chunk.js",  //给打包输出的其他文件命名
+        assetModuleFilename: "static/media/[hash:10][ext][query]",
         //自动清空打包内容
         //原理 在打包前 将path整个目录内容清空 再进行打包
         clean: true
@@ -151,12 +154,19 @@ module.exports = {
         }),
         // css打包配置
         new MiniCssExtractPlugin({
-            filename: 'static/css/main.css',
+            filename: 'static/css/[name].css',
+            chunkFilename: "static/css/[name].chunk.css",
         }),  //css成单独文件的插件调用
         // new CssMinimizerPlugin(),
         // new TerserWebpackPlugin({   
         //     parallel: threads,  //开启多线程和设置线程数量
         // }),
+        //预加载技术
+        new PreloadWebpackPlugin({
+            // rel: 'preload',
+            // as: 'script',
+            rel: 'prefetch'
+        })  
     ],
     optimization: {  //压缩的相关可以放在这里 功能是一样的
         minimizer: [
