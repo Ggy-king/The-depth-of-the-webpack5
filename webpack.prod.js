@@ -8,6 +8,8 @@ const CssMinimizerPlugin = require("css-minimizer-webpack-plugin")  //引入css�
 const TerserWebpackPlugin = require("terser-webpack-plugin")  //引入js压缩依赖包
 const ImageMinimizerPlugin = require("image-minimizer-webpack-plugin")  //引入压缩图片依赖包 下面的配置暂不写
 const PreloadWebpackPlugin = require("@vue/preload-webpack-plugin")  //引入立即加载依赖包
+const WorkboxPlugin = require('workbox-webpack-plugin')  //引入PWA workbox 使离线可也可以显示
+
 
 const threads = os.cpus().length  //获取cpu核心数
 
@@ -166,7 +168,13 @@ module.exports = {
             // rel: 'preload',
             // as: 'script',
             rel: 'prefetch'
-        })  
+        }),
+        new WorkboxPlugin.GenerateSW({
+            //这些选项帮助快速启动 ServiceWorkers
+            //不允许遗留任何旧的 ServiceWorkers
+            clientsClaim: true,
+            skipWaiting: true,
+        })
     ],
     optimization: {  //压缩的相关可以放在这里 功能是一样的
         minimizer: [
