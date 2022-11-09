@@ -2,6 +2,7 @@
 const path = require("path")
 const EslintWebpackPlugin = require("eslint-webpack-plugin")
 const HtmlWebpackPlugin = require("html-webpack-plugin")
+const ReactRefreshWebpackPlugin = require("@pmmmwh/react-refresh-webpack-plugin")
 
 //返回处理样式loader函数
 const getStyleLoaders = (pre) => {
@@ -28,8 +29,7 @@ module.exports = {
         path: undefined,
         filename: "static/js/[name].js",
         chunkFilename: "static/js/[name].chunk.js",
-        assentModuleFilename: "static/media/[hash:10][ext][query]",
-
+        assetModuleFilename: "static/media/[hash:10][ext][query]",
     },
     module: {
         rules: [
@@ -76,6 +76,9 @@ module.exports = {
                 options: {
                     cacheDirectory: true,
                     cacheCompression: false,
+                    plugins: [
+                        'react-refresh/babel'   //激活js的HMR功能
+                    ]
                 },
             },
         ],
@@ -85,29 +88,37 @@ module.exports = {
     plugins: [
         new EslintWebpackPlugin({
             context: path.resolve(__dirname, '../src'),
-            exclude: "mode_module",
+            exclude: "node_modules",
             cache: true,
-            cacheLocation: path.resolve(__dirname, '../node_module/.cache/.eslintcache'),
+            cacheLocation: path.resolve(__dirname, '../node_modules/.cache/.eslintcache'),
         }),
         new HtmlWebpackPlugin({
-            template: path.resolve(__dirname,"../public/index.html"),
+            template: path.resolve(__dirname, "../public/index.html"),
         }),
+        new ReactRefreshWebpackPlugin()
     ],
     mode: "development",
     devtool: "cheap-module-source-map",
     optimization: {
-        spiltChunks: {
+        splitChunks: {
             chunks: "all",
         },
         runtimeChunk: {
-            name:(entrypoint) => `runtime~${entrypoint.name}.js`,
+            name: (entrypoint) => `runtime~${entrypoint.name}.js`,
         },
     },
-    devServe: {
+    //webpack解析模块加载选项
+    resolve: {
+        //自动补全文件扩展名
+        extensions: [".jsx", ".js", ".json"],
+    },
+    devServer: {
         host: "localhost",
         port: 3000,
         open: true,
-        hot: true
+        hot: true,
+        historyApiFallback: true,  //解决前端路由刷新返回404问题
     }
 
 }
+
