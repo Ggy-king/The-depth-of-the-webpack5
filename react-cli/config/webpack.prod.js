@@ -1,12 +1,17 @@
 const path = require("path")
 const EslintWebpackPlugin = require("eslint-webpack-plugin")
 const HtmlWebpackPlugin = require("html-webpack-plugin")
-const ReactRefreshWebpackPlugin = require("@pmmmwh/react-refresh-webpack-plugin")
+
+const MiniCssExtractPlugin = require("mini-css-extract-plugin") //生产下的css打包成单独文件
+const CssMinimizerWebpackPlugin = require("css-minimizer-webpack-plugin") //css压缩
+const TerserWebpackPlugin = require("terser-webpack-plugin") //js压缩
+// const ImageMinimizerWebpackPlugin = require("image-minimizer-webpack-plugin") //图片压缩  这个配置较复杂 官网自行赋值代码 这里就不写了
+const CopyPlugin = require("copy-webpack-plugin")   //复制问题 解决图标问题 即public目录下静态文件问题
 
 //返回处理样式loader函数
 const getStyleLoaders = (pre) => {
     return [
-        "style-loader",
+        MiniCssExtractPlugin.loader,
         "css-loader",
         {
             // 处理css兼容性的问题
@@ -25,10 +30,11 @@ const getStyleLoaders = (pre) => {
 module.exports = {
     entry: './src/main.js',
     output: {
-        path: undefined,
-        filename: "static/js/[name].js",
-        chunkFilename: "static/js/[name].chunk.js",
+        path: path.resolve(__dirname, "../dist"),
+        filename: "static/js/[name].[contenthash:10].js",
+        chunkFilename: "static/js/[name].[contenthash:10].chunk.js",
         assetModuleFilename: "static/media/[hash:10][ext][query]",
+        clean: true,
     },
     module: {
         rules: [
@@ -75,9 +81,6 @@ module.exports = {
                 options: {
                     cacheDirectory: true,
                     cacheCompression: false,
-                    plugins: [
-                        'react-refresh/babel'   //激活js的HMR功能
-                    ]
                 },
             },
         ],
@@ -94,10 +97,26 @@ module.exports = {
         new HtmlWebpackPlugin({
             template: path.resolve(__dirname, "../public/index.html"),
         }),
-        new ReactRefreshWebpackPlugin()
+        new MiniCssExtractPlugin({
+            filename: 'static/css/[name].[contenthash:10].css',
+            chunkFilename: 'static/css/[name].[contenthash:10].chunk.css'
+        }),
+        new CopyPlugin({
+            patterns: [
+                {
+                    from: path.resolve(__dirname, "../public"),
+                    to: path.resolve(__dirname, "../dist"),
+                    globOptions: {
+                        ignore: ["**/index.html"],   //忽略文件
+                    }
+                },
+                
+            ]
+        })
+
     ],
-    mode: "development",
-    devtool: "cheap-module-source-map",
+    mode: "production",
+    devtool: "source-map",
     optimization: {
         splitChunks: {
             chunks: "all",
@@ -105,19 +124,16 @@ module.exports = {
         runtimeChunk: {
             name: (entrypoint) => `runtime~${entrypoint.name}.js`,
         },
+        minimizer: [
+            new CssMinimizerWebpackPlugin(),
+            new TerserWebpackPlugin()
+        ]
     },
     //webpack解析模块加载选项
     resolve: {
         //自动补全文件扩展名
         extensions: [".jsx", ".js", ".json"],
     },
-    devServer: {
-        host: "localhost",
-        port: 3000,
-        open: true,
-        hot: true,
-        historyApiFallback: true,  //解决前端路由刷新返回404问题
-    }
 
 }
 

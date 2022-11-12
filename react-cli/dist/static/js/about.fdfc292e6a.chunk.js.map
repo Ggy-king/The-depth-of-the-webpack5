@@ -1,0 +1,1 @@
+{"version":3,"file":"static/js/about.fdfc292e6a.chunk.js","mappings":"oKAEe,SAASA,IACtB,OACE,2BACI,sCAGR,C","sources":["webpack://react-cli/./src/page/About/index.jsx"],"sourcesContent":["import React from 'react'\r\n\r\nexport default function About() {\r\n  return (\r\n    <div>\r\n        <h2>About666</h2>\r\n    </div>\r\n  )\r\n}\r\n"],"names":["About"],"sourceRoot":""}
