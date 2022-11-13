@@ -11,11 +11,13 @@ const CopyPlugin = require("copy-webpack-plugin")   //复制问题 解决图标�
 const { VueLoaderPlugin } = require("vue-loader")
 const { DefinePlugin } = require("webpack")
 
+const isProduction = process.env.NODE_ENV === 'production'
+
 
 //返回处理样式loader函数
 const getStyleLoaders = (pre) => {
     return [
-        MiniCssExtractPlugin.loader,
+        isProduction ? MiniCssExtractPlugin.loader : "vue-style-loader",
         "css-loader",
         {
             // 处理css兼容性的问题
@@ -34,9 +36,9 @@ const getStyleLoaders = (pre) => {
 module.exports = {
     entry: './src/main.js',
     output: {
-        path: path.resolve(__dirname, "../dist"),
-        filename: "static/js/[name].[contenthash:10].js",
-        chunkFilename: "static/js/[name].[contenthash:10].chunk.js",
+        path: isProduction ? path.resolve(__dirname, "../dist") : undefined,
+        filename: isProduction ? "static/js/[name].[contenthash:10].js" : "static/js/[name].js",
+        chunkFilename: isProduction ? "static/js/[name].[contenthash:10].chunk.js" : "static/js/[name].chunk.js",
         assetModuleFilename: "static/media/[hash:10][ext][query]",
         clean: true,
     },
@@ -105,11 +107,11 @@ module.exports = {
         new HtmlWebpackPlugin({
             template: path.resolve(__dirname, "../public/index.html"),
         }),
-        new MiniCssExtractPlugin({
+        isProduction && new MiniCssExtractPlugin({
             filename: 'static/css/[name].[contenthash:10].css',
             chunkFilename: 'static/css/[name].[contenthash:10].chunk.css'
         }),
-        new CopyPlugin({
+        isProduction && new CopyPlugin({
             patterns: [
                 {
                     from: path.resolve(__dirname, "../public"),
@@ -129,9 +131,9 @@ module.exports = {
             __VUE_PROD_DEVTOOLS__: false,
         })
 
-    ],
-    mode: "production",
-    devtool: "source-map",
+    ].filter(Boolean),
+    mode: isProduction ? "production" : "development",
+    devtool: isProduction ? "source-map" : "cheap-module-source-map",
     optimization: {
         splitChunks: {
             chunks: "all",
@@ -139,6 +141,7 @@ module.exports = {
         runtimeChunk: {
             name: (entrypoint) => `runtime~${entrypoint.name}.js`,
         },
+        minimize: isProduction,
         minimizer: [
             new CssMinimizerWebpackPlugin(),
             new TerserWebpackPlugin()
@@ -149,6 +152,13 @@ module.exports = {
         //自动补全文件扩展名
         extensions: [".vue", ".js", ".json"],
     },
+    devServer: {
+        host: "localhost",
+        port: 3000,
+        open: true,
+        hot: true,
+        historyApiFallback: true,  //解决前端路由刷新返回404问题
+    }
 
 }
 
