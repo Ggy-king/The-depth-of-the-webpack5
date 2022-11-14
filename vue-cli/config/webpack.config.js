@@ -11,6 +11,8 @@ const CopyPlugin = require("copy-webpack-plugin")   //复制问题 解决图标�
 const { VueLoaderPlugin } = require("vue-loader")
 const { DefinePlugin } = require("webpack")
 
+const ElementPlus = require("unplugin-element-plus/webpack")
+
 const isProduction = process.env.NODE_ENV === 'production'
 
 
@@ -29,7 +31,13 @@ const getStyleLoaders = (pre) => {
                 },
             },
         },
-        pre
+        pre && {
+            loader: pre,
+            options:
+                pre === "sass-loader" ? {
+                    additionalData: `@use "@/styles/element/index.scss" as *;`,
+                } : {}
+        }
     ].filter(Boolean)
 }
 
@@ -91,7 +99,11 @@ module.exports = {
             },
             {
                 test: /\.vue$/,
-                loader: 'vue-loader'
+                loader: 'vue-loader',
+                options: {
+                    //开启缓存
+                    cacheDirectory: path.resolve(__dirname, "../node_modules/.cache/vue-loader")
+                }
             }
         ],
 
@@ -129,6 +141,9 @@ module.exports = {
         new DefinePlugin({
             __VUE_OPTIONS_API__: true,
             __VUE_PROD_DEVTOOLS__: false,
+        }),
+        ElementPlus({   
+            useSource: true   //自定义主题
         })
 
     ].filter(Boolean),
@@ -137,6 +152,26 @@ module.exports = {
     optimization: {
         splitChunks: {
             chunks: "all",
+            cacheGroups: {
+                //vue相关 打包成一个文件
+                vue: {
+                    test: /[\\/]node_modules[\\/]vue(.*)?[\\/]/,
+                    name: "vue-react",
+                    priority: 40,
+                },
+                //elementPlus单独打包
+                elementPlus: {
+                    test: /[\\/]node_modules[\\/]element-plus[\\/]/,
+                    name: "elementPlus-chunk",
+                    priority: 30,
+                },
+                //剩下的node_modules单独打包
+                lib: {
+                    test: /[\\/]node_modules[\\/]/,
+                    name: "lib-chunk",
+                    priority: 20,
+                },
+            }
         },
         runtimeChunk: {
             name: (entrypoint) => `runtime~${entrypoint.name}.js`,
@@ -151,6 +186,10 @@ module.exports = {
     resolve: {
         //自动补全文件扩展名
         extensions: [".vue", ".js", ".json"],
+        // 路径别名
+        alias: {
+            "@": path.resolve(__dirname, "../src"),
+        }
     },
     devServer: {
         host: "localhost",
@@ -158,7 +197,8 @@ module.exports = {
         open: true,
         hot: true,
         historyApiFallback: true,  //解决前端路由刷新返回404问题
-    }
+    },
+    performance: false  //关闭性能分析 提高打包速度
 
 }
 

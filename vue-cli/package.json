@@ -11,7 +11,7 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "browserslist":[
+  "browserslist": [
     "last 2 version",
     "> 1%",
     "not dead"
@@ -42,6 +42,8 @@
     "webpack-dev-server": "^4.11.1"
   },
   "dependencies": {
+    "element-plus": "^2.2.21",
+    "unplugin-element-plus": "^0.4.1",
     "vue": "^3.2.45",
     "vue-router": "^4.1.6"
   }
