@@ -13,6 +13,13 @@ module.exports = {
             {
                 test: /\.js$/,
                 loader: "./loaders/test-loader.js"
+            },
+            {
+                test: /\.js$/,
+                loader: "./loaders/babel-loader",
+                options: {
+                    presets: ["@babel/preset-env"],
+                }
             }
         ]
     },
