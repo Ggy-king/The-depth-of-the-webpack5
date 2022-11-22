@@ -20,7 +20,12 @@ module.exports = {
                 options: {
                     presets: ["@babel/preset-env"],
                 }
-            }
+            },
+            {
+                test: /\.(png|jpe?g|gif)$/,
+                loader: "./loaders/test-loader.js",
+                type: "javascript/auto"  //阻止webpack默认处理图片
+            },
         ]
     },
     plugins: [
